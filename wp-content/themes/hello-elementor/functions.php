@@ -280,10 +280,10 @@ function insert_role_autonomous() {
 }
 add_action('init', 'insert_role_autonomous');
 
-// remove_role('clients');
+remove_role('clients');
 // ADICIONA O GRUPO Cliente
 function insert_role_clients() {
-    if (get_option('clients') < 1) {
+    // if (get_option('clients') < 1) {
         add_role(
 			'clients',
 			'Cliente', [
@@ -308,7 +308,7 @@ function insert_role_clients() {
 			]
 		);
         update_option('clients', 1);
-    }
+    // }
 }
 add_action('init', 'insert_role_clients');
 
