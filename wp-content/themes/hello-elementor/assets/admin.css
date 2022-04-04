@@ -1,0 +1,14 @@
+/* Remove o botão de exclusão do campo complexo da página "Configurações da linha do tempo" */
+.config-packages .cf-complex__group-actions {
+    display: none;
+}
+
+/* Remove os espaços dos campos do tipo "hidden" */
+.cf-hidden {
+    display: none !important;
+}
+
+/* Adicionado um background na tab atual dos campos complexos do "Carbon fields" */
+.cf-complex__tabs-item--current {
+    background-color: #f0f0f1 !important;
+}
