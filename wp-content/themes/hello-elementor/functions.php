@@ -306,7 +306,7 @@ function register_packages_post_type() {
 		'show_ui' => true,
 		'hierarchical' => false,
 		'rewrite' => array('slug' => 'packages', 'with_front' => false),
-		'supports' => ['title', 'editor', 'thumbnail'],
+		'supports' => ['title', 'editor'],
 		'has_archive' => 'packages',
 		'menu_icon' => 'dashicons-admin-page',
 		'labels' => array(
