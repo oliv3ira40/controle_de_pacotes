@@ -365,3 +365,13 @@ add_action('init', 'register_packages_post_type');
 
 
 
+
+
+
+
+
+
+/**
+ * Campos personalizados
+ */
+require get_template_directory() . '/campos-personalizados/campos-personalizados.php';
