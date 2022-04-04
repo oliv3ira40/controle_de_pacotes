@@ -232,6 +232,11 @@ if ( ! function_exists( 'hello_elementor_body_open' ) ) {
 
 
 
+function admin_style() {
+	wp_enqueue_style('admin-geral', get_template_directory_uri().'/assets/admin.css');
+}
+add_action('admin_enqueue_scripts', 'admin_style');
+
 
 
 
