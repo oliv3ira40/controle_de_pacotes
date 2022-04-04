@@ -232,8 +232,24 @@ if ( ! function_exists( 'hello_elementor_body_open' ) ) {
 
 
 
+function admin_style() {
+	wp_enqueue_style('admin-geral', get_template_directory_uri().'/assets/admin.css');
+}
+add_action('admin_enqueue_scripts', 'admin_style');
 
 
+
+/**
+ * Debug de valores
+ * @return void
+ */
+function dd(...$valores) {
+	array_map(function ($valor) {
+		echo '<pre>';
+		print_r($valor);
+	}, $valores);
+	exit;
+}
 
 
 remove_role('contributor');
@@ -277,7 +293,18 @@ function insert_role_clients() {
 				'edit_others_posts' => true, // Allows user to edit others posts too
 				'publish_posts' => true, // Allows the user to publish posts
 				'manage_categories' => true, // Allows user to manage post categories,
-				'level_0' => true
+				'level_0' => true,
+
+				'create_posts_packages' => false,
+				'publish_packages' => true,
+				'edit_packages' => true,
+				'edit_others_packages' => true,
+				'delete_packages' => false,
+				'delete_others_packages' => false,
+				'read_private_packages' => true,
+				'edit_ypt' => true,
+				'delete_ypt' => false,
+				'read_ypt' => true,
 			]
 		);
         update_option('clients', 1);
@@ -309,6 +336,18 @@ function register_packages_post_type() {
 		'supports' => ['title', 'editor'],
 		'has_archive' => 'packages',
 		'menu_icon' => 'dashicons-admin-page',
+		'capabilities' => [
+			'create_posts' => 'create_posts_packages',
+			'publish_posts' => 'publish_packages',
+			'edit_posts' => 'edit_packages',
+			'edit_others_posts' => 'edit_others_packages',
+			'delete_posts' => 'delete_packages',
+			'delete_others_posts' => 'delete_others_packages',
+			'read_private_posts' => 'read_private_packages',
+			'edit_post' => 'edit_ypt',
+			'delete_post' => 'delete_ypt',
+			'read_post' => 'read_ypt'
+		],
 		'labels' => array(
 			'name' => 'Pacotes',
 			'singular_name' => 'Pacotes',
@@ -324,6 +363,24 @@ function register_packages_post_type() {
 }
 add_action('init', 'register_packages_post_type');
 
+/**
+ * Adiciona as permissões de usuário
+ * @return void
+ */
+function add_permissoes_areas() {
+	$admins = get_role('administrator');
+	$admins->add_cap('create_posts_packages');
+	$admins->add_cap('publish_packages');
+	$admins->add_cap('edit_packages');
+	$admins->add_cap('edit_others_packages');
+	$admins->add_cap('delete_packages');
+	$admins->add_cap('delete_others_packages');
+	$admins->add_cap('read_private_packages');
+	$admins->add_cap('edit_ypt');
+	$admins->add_cap('delete_ypt');
+	$admins->add_cap('read_ypt');
+}
+add_action('admin_init', 'add_permissoes_areas');
 
 
 // /**
