@@ -239,6 +239,17 @@ add_action('admin_enqueue_scripts', 'admin_style');
 
 
 
+/**
+ * Debug de valores
+ * @return void
+ */
+function dd(...$valores) {
+	array_map(function ($valor) {
+		echo '<pre>';
+		print_r($valor);
+	}, $valores);
+	exit;
+}
 
 
 remove_role('contributor');
