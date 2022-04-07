@@ -421,7 +421,7 @@ add_filter('post_row_actions','remove_edicao_rapida_ar',10,2);
  * Adiciona as permissões de usuário
  * @return void
  */
-function add_permissoes_areas() {
+function add_permissoes_packages() {
 	$admins = get_role('administrator');
 	$admins->add_cap('create_posts_packages');
 	$admins->add_cap('publish_packages');
@@ -430,11 +430,13 @@ function add_permissoes_areas() {
 	$admins->add_cap('delete_packages');
 	$admins->add_cap('delete_others_packages');
 	$admins->add_cap('read_private_packages');
-	$admins->add_cap('edit_ypt');
-	$admins->add_cap('delete_ypt');
-	$admins->add_cap('read_ypt');
+	$admins->add_cap('edit_package');
+	$admins->add_cap('delete_package');
+	$admins->add_cap('read_package');
 }
-add_action('admin_init', 'add_permissoes_areas');
+add_action('admin_init', 'add_permissoes_packages');
+
+
 
 
 // /**
