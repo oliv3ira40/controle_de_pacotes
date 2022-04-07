@@ -9,9 +9,9 @@ function packages() {
         ->add_fields([
             Field::make('multiselect', 'clients', 'Clientes')
                 ->add_options([
-                    '1' => 'Cliente 1',
-                    '2' => 'Cliente 2',
-                    '3' => 'Cliente 3',
+                    'Cliente 1' => 'Cliente 1',
+                    'Cliente 2' => 'Cliente 2',
+                    'Cliente 3' => 'Cliente 3',
                 ]),
         
             Field::make('complex', 'sections_packages', 'Sessões')
