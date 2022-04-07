@@ -384,6 +384,40 @@ function register_packages_post_type() {
 add_action('init', 'register_packages_post_type');
 
 /**
+ * Remove a funcionalidade de editar usando a opção de ação em massa
+ * @return void
+ */
+function remove_bulk_actions_ar() {
+	if (!current_user_can('bulk_packages')) {
+		add_filter('bulk_actions-edit-packages', '__return_empty_array');
+		add_filter('bulk_actions-upload', '__return_empty_array');
+	}
+}
+add_action('wp_loaded', 'remove_bulk_actions_ar');
+
+/**
+ * Remove a checkbox para selecionar mútiplos posts
+ * @return void
+ */
+function remove_checkbox_ar ($columns) {
+	unset($columns['cb']);
+	return $columns;
+}
+add_filter('manage_packages_posts_columns', 'remove_checkbox_ar');
+
+/**
+ * Remove campo de edição rápida
+ * @return void
+ */
+function remove_edicao_rapida_ar($actions, $post) { 
+	if (get_post_type(get_the_ID()) == 'packages') {
+		unset($actions['inline hide-if-no-js']);
+	}
+	return $actions;
+}
+add_filter('post_row_actions','remove_edicao_rapida_ar',10,2);
+
+/**
  * Adiciona as permissões de usuário
  * @return void
  */
