@@ -259,6 +259,9 @@ remove_role('subscriber');
 
 
 
+
+
+
 // remove_role('autonomous');
 // ADICIONA O GRUPO AUTONOMO
 function insert_role_autonomous() {
@@ -269,10 +272,20 @@ function insert_role_autonomous() {
 				'read'            => true, // Allows a user to read
 				'create_posts'      => true, // Allows user to create new posts
 				'edit_posts'        => true, // Allows user to edit their own posts
-				'edit_others_posts' => true, // Allows user to edit others posts too
+				'edit_others_posts' => false, // Allows user to edit others posts too
 				'publish_posts' => true, // Allows the user to publish posts
 				'manage_categories' => true, // Allows user to manage post categories,
-				'level_0' => true
+
+				'create_posts_packages' => true,
+				'publish_packages' => true,
+				'edit_packages' => true,
+				'edit_others_packages' => false,
+				'delete_packages' => true,
+				'delete_others_packages' => false,
+				'read_private_packages' => true,
+				'edit_package' => true,
+				'delete_package' => true,
+				'read_package' => true,
 			]
 		);
         update_option('autonomous', 1);
