@@ -232,6 +232,14 @@ if ( ! function_exists( 'hello_elementor_body_open' ) ) {
 
 
 
+
+
+
+
+
+
+
+
 function admin_style() {
 	wp_enqueue_style('admin-geral', get_template_directory_uri().'/assets/admin.css');
 }
@@ -293,10 +301,10 @@ function insert_role_autonomous() {
 }
 add_action('init', 'insert_role_autonomous');
 
-remove_role('clients');
+// remove_role('clients');
 // ADICIONA O GRUPO Cliente
 function insert_role_clients() {
-    // if (get_option('clients') < 1) {
+    if (get_option('clients') < 1) {
         add_role(
 			'clients',
 			'Cliente', [
@@ -306,7 +314,6 @@ function insert_role_clients() {
 				'edit_others_posts' => true, // Allows user to edit others posts too
 				'publish_posts' => true, // Allows the user to publish posts
 				'manage_categories' => true, // Allows user to manage post categories,
-				'level_0' => true,
 
 				'create_posts_packages' => false,
 				'publish_packages' => true,
@@ -315,13 +322,13 @@ function insert_role_clients() {
 				'delete_packages' => false,
 				'delete_others_packages' => false,
 				'read_private_packages' => true,
-				'edit_ypt' => true,
-				'delete_ypt' => false,
-				'read_ypt' => true,
+				'edit_package' => true,
+				'delete_package' => false,
+				'read_package' => true,
 			]
 		);
         update_option('clients', 1);
-    // }
+    }
 }
 add_action('init', 'insert_role_clients');
 
