@@ -340,7 +340,6 @@ add_action('init', 'insert_role_clients');
 
 
 
-
 /**
  * Registra o custom post type "Pacotes"
  * @return void
@@ -364,9 +363,10 @@ function register_packages_post_type() {
 			'delete_posts' => 'delete_packages',
 			'delete_others_posts' => 'delete_others_packages',
 			'read_private_posts' => 'read_private_packages',
-			'edit_post' => 'edit_ypt',
-			'delete_post' => 'delete_ypt',
-			'read_post' => 'read_ypt'
+			'edit_post' => 'edit_package',
+			'delete_post' => 'delete_package',
+			'read_post' => 'read_package',
+			'bulk_packages' => 'do_not_allow',
 		],
 		'labels' => array(
 			'name' => 'Pacotes',
