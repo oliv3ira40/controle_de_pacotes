@@ -431,36 +431,6 @@ add_action('admin_init', 'add_permissoes_packages');
 
 
 
-// /**
-//  * Registra o custom post type "Clientes"
-//  * @return void
-//  */
-// function register_clients_post_type() {
-// 	register_post_type('clients', array(
-// 		'description' => 'clients-post-type',
-// 		'exclude_from_search' => false,
-// 		'public' => false,
-// 		'show_ui' => true,
-// 		'hierarchical' => false,
-// 		'rewrite' => array('slug' => 'clients', 'with_front' => false),
-// 		'supports' => ['title', 'editor', 'thumbnail'],
-// 		'has_archive' => 'clients',
-// 		'menu_icon' => 'dashicons-admin-users',
-// 		'labels' => array(
-// 			'name' => 'Clientes',
-// 			'singular_name' => 'Clientes',
-// 			'search_items' => 'Pesquisar em Clientes',
-// 			'all_items' => 'Lista',
-// 			'edit_item' => 'Editar',
-// 			'upload_item' => 'Atualizar',
-// 			'add_new' => 'Adicionar novo',
-// 			'add_new_item' => 'Adicionar novo',
-// 		),
-// 		'rewrite' => array('slug' => 'clients'),
-// 	));  
-// }
-// add_action('init', 'register_clients_post_type');
-
 
 
 
