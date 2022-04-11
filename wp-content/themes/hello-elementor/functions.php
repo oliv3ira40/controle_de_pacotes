@@ -512,8 +512,28 @@ add_action('pre_get_posts', 'change_posts_per_page');
 
 
 
+add_filter('views_edit-packages', 'menu_presidente', 10, 1);
+function menu_presidente($menu) {
+	$current_user = wp_get_current_user();
+	$role = $current_user->roles[0];
 
-/**
- * Campos personalizados
- */
-require get_template_directory() . '/campos-personalizados/campos-personalizados.php';
+	if ($role != 'administrator') {
+		unset($menu['all']);
+		unset($menu['publish']);
+		unset($menu['trash']);
+	
+		$argumentos = [
+			'numberposts'   => -1,
+			'post_type'     => 'packages',
+		];	
+		$quant_posts_ja_destacados = count(get_posts($argumentos));
+	
+		$menu['all'] = '
+			<a href="edit.php?post_type=packages">
+				Todos
+				<span class="txt-dark">('.$quant_posts_ja_destacados.')</span>
+			</a>
+		';
+	}
+	return $menu;
+}
