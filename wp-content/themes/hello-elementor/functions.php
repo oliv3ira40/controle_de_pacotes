@@ -441,6 +441,15 @@ require get_template_directory() . '/campos-personalizados/campos-personalizados
 
 
 
+function get_clients() {
+	$args = [
+		'role'    => 'clients',
+		'orderby' => 'user_nicename',
+		'order'   => 'ASC'
+	];
+	$users = get_users($args);
+	return $users;
+}
 
 
 
