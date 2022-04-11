@@ -6,6 +6,10 @@
     display: none;
 }
 
+.config-packages .cf-complex__tabs-item {
+    pointer-events: none;
+}
+
 /* Remove os espaços dos campos do tipo "hidden" */
 .cf-hidden {
     display: none !important;
