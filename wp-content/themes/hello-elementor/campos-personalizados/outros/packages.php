@@ -5,8 +5,8 @@ use Carbon_Fields\Field;
 function packages() {
     $list_page = str_contains($_SERVER['REQUEST_URI'], 'edit.php');
     $new_page = str_contains($_SERVER['REQUEST_URI'], 'post-new.php');
-
     if (
+        (isset($_SERVER['REQUEST_URI']) AND $new_page AND $_REQUEST['post_type'] == 'packages') OR
         (isset($_REQUEST['action']) AND $_REQUEST['action'] != 'editpost') OR
         (isset($_REQUEST['action']) AND $_REQUEST['action'] == 'editpost' AND $_REQUEST['post_type'] == 'packages') OR
         $list_page
