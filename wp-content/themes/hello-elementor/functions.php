@@ -233,13 +233,6 @@ if ( ! function_exists( 'hello_elementor_body_open' ) ) {
 
 
 
-
-
-
-
-
-
-
 function admin_style() {
 	wp_enqueue_style('admin-geral', get_template_directory_uri().'/assets/admin.css');
 }
@@ -264,7 +257,6 @@ remove_role('contributor');
 remove_role('author');
 remove_role('editor');
 remove_role('subscriber');
-
 
 
 
