@@ -375,8 +375,8 @@ function register_packages_post_type() {
 			'all_items' => 'Lista',
 			'edit_item' => 'Editar',
 			'upload_item' => 'Atualizar',
-			'add_new' => 'Adicionar novo',
-			'add_new_item' => 'Adicionar novo',
+			'add_new' => 'Novo pacote',
+			'add_new_item' => 'Adicionar novo pacote',
 		),
 		'rewrite' => array('slug' => 'packages'),
 	));  
