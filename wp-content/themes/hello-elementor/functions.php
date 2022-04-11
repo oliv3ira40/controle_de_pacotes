@@ -432,6 +432,10 @@ add_action('admin_init', 'add_permissoes_packages');
 
 
 
+/**
+ * Campos personalizados
+ */
+require get_template_directory() . '/campos-personalizados/campos-personalizados.php';
 
 
 
