@@ -232,6 +232,7 @@ if ( ! function_exists( 'hello_elementor_body_open' ) ) {
 
 
 
+
 function admin_style() {
 	wp_enqueue_style('admin-geral', get_template_directory_uri().'/assets/admin.css');
 }
@@ -259,6 +260,8 @@ remove_role('subscriber');
 
 
 
+
+
 // remove_role('autonomous');
 // ADICIONA O GRUPO AUTONOMO
 function insert_role_autonomous() {
@@ -269,10 +272,20 @@ function insert_role_autonomous() {
 				'read'            => true, // Allows a user to read
 				'create_posts'      => true, // Allows user to create new posts
 				'edit_posts'        => true, // Allows user to edit their own posts
-				'edit_others_posts' => true, // Allows user to edit others posts too
+				'edit_others_posts' => false, // Allows user to edit others posts too
 				'publish_posts' => true, // Allows the user to publish posts
 				'manage_categories' => true, // Allows user to manage post categories,
-				'level_0' => true
+
+				'create_posts_packages' => true,
+				'publish_packages' => true,
+				'edit_packages' => true,
+				'edit_others_packages' => false,
+				'delete_packages' => true,
+				'delete_others_packages' => false,
+				'read_private_packages' => true,
+				'edit_package' => true,
+				'delete_package' => true,
+				'read_package' => true,
 			]
 		);
         update_option('autonomous', 1);
@@ -280,10 +293,10 @@ function insert_role_autonomous() {
 }
 add_action('init', 'insert_role_autonomous');
 
-remove_role('clients');
+// remove_role('clients');
 // ADICIONA O GRUPO Cliente
 function insert_role_clients() {
-    // if (get_option('clients') < 1) {
+    if (get_option('clients') < 1) {
         add_role(
 			'clients',
 			'Cliente', [
@@ -293,7 +306,6 @@ function insert_role_clients() {
 				'edit_others_posts' => true, // Allows user to edit others posts too
 				'publish_posts' => true, // Allows the user to publish posts
 				'manage_categories' => true, // Allows user to manage post categories,
-				'level_0' => true,
 
 				'create_posts_packages' => false,
 				'publish_packages' => true,
@@ -302,16 +314,15 @@ function insert_role_clients() {
 				'delete_packages' => false,
 				'delete_others_packages' => false,
 				'read_private_packages' => true,
-				'edit_ypt' => true,
-				'delete_ypt' => false,
-				'read_ypt' => true,
+				'edit_package' => true,
+				'delete_package' => false,
+				'read_package' => true,
 			]
 		);
         update_option('clients', 1);
-    // }
+    }
 }
 add_action('init', 'insert_role_clients');
-
 
 
 
@@ -333,7 +344,7 @@ function register_packages_post_type() {
 		'show_ui' => true,
 		'hierarchical' => false,
 		'rewrite' => array('slug' => 'packages', 'with_front' => false),
-		'supports' => ['title', 'editor'],
+		'supports' => [''],
 		'has_archive' => 'packages',
 		'menu_icon' => 'dashicons-admin-page',
 		'capabilities' => [
@@ -344,9 +355,10 @@ function register_packages_post_type() {
 			'delete_posts' => 'delete_packages',
 			'delete_others_posts' => 'delete_others_packages',
 			'read_private_posts' => 'read_private_packages',
-			'edit_post' => 'edit_ypt',
-			'delete_post' => 'delete_ypt',
-			'read_post' => 'read_ypt'
+			'edit_post' => 'edit_package',
+			'delete_post' => 'delete_package',
+			'read_post' => 'read_package',
+			'bulk_packages' => 'do_not_allow',
 		],
 		'labels' => array(
 			'name' => 'Pacotes',
@@ -355,8 +367,8 @@ function register_packages_post_type() {
 			'all_items' => 'Lista',
 			'edit_item' => 'Editar',
 			'upload_item' => 'Atualizar',
-			'add_new' => 'Adicionar novo',
-			'add_new_item' => 'Adicionar novo',
+			'add_new' => 'Novo pacote',
+			'add_new_item' => 'Adicionar novo pacote',
 		),
 		'rewrite' => array('slug' => 'packages'),
 	));  
@@ -364,10 +376,44 @@ function register_packages_post_type() {
 add_action('init', 'register_packages_post_type');
 
 /**
+ * Remove a funcionalidade de editar usando a opção de ação em massa
+ * @return void
+ */
+function remove_bulk_actions_ar() {
+	if (!current_user_can('bulk_packages')) {
+		add_filter('bulk_actions-edit-packages', '__return_empty_array');
+		add_filter('bulk_actions-upload', '__return_empty_array');
+	}
+}
+add_action('wp_loaded', 'remove_bulk_actions_ar');
+
+/**
+ * Remove a checkbox para selecionar mútiplos posts
+ * @return void
+ */
+function remove_checkbox_ar ($columns) {
+	unset($columns['cb']);
+	return $columns;
+}
+add_filter('manage_packages_posts_columns', 'remove_checkbox_ar');
+
+/**
+ * Remove campo de edição rápida
+ * @return void
+ */
+function remove_edicao_rapida_ar($actions, $post) { 
+	if (get_post_type(get_the_ID()) == 'packages') {
+		unset($actions['inline hide-if-no-js']);
+	}
+	return $actions;
+}
+add_filter('post_row_actions','remove_edicao_rapida_ar',10,2);
+
+/**
  * Adiciona as permissões de usuário
  * @return void
  */
-function add_permissoes_areas() {
+function add_permissoes_packages() {
 	$admins = get_role('administrator');
 	$admins->add_cap('create_posts_packages');
 	$admins->add_cap('publish_packages');
@@ -376,53 +422,11 @@ function add_permissoes_areas() {
 	$admins->add_cap('delete_packages');
 	$admins->add_cap('delete_others_packages');
 	$admins->add_cap('read_private_packages');
-	$admins->add_cap('edit_ypt');
-	$admins->add_cap('delete_ypt');
-	$admins->add_cap('read_ypt');
+	$admins->add_cap('edit_package');
+	$admins->add_cap('delete_package');
+	$admins->add_cap('read_package');
 }
-add_action('admin_init', 'add_permissoes_areas');
-
-
-// /**
-//  * Registra o custom post type "Clientes"
-//  * @return void
-//  */
-// function register_clients_post_type() {
-// 	register_post_type('clients', array(
-// 		'description' => 'clients-post-type',
-// 		'exclude_from_search' => false,
-// 		'public' => false,
-// 		'show_ui' => true,
-// 		'hierarchical' => false,
-// 		'rewrite' => array('slug' => 'clients', 'with_front' => false),
-// 		'supports' => ['title', 'editor', 'thumbnail'],
-// 		'has_archive' => 'clients',
-// 		'menu_icon' => 'dashicons-admin-users',
-// 		'labels' => array(
-// 			'name' => 'Clientes',
-// 			'singular_name' => 'Clientes',
-// 			'search_items' => 'Pesquisar em Clientes',
-// 			'all_items' => 'Lista',
-// 			'edit_item' => 'Editar',
-// 			'upload_item' => 'Atualizar',
-// 			'add_new' => 'Adicionar novo',
-// 			'add_new_item' => 'Adicionar novo',
-// 		),
-// 		'rewrite' => array('slug' => 'clients'),
-// 	));  
-// }
-// add_action('init', 'register_clients_post_type');
-
-
-
-
-
-
-
-
-
-
-
+add_action('admin_init', 'add_permissoes_packages');
 
 
 
@@ -432,3 +436,128 @@ add_action('admin_init', 'add_permissoes_areas');
  * Campos personalizados
  */
 require get_template_directory() . '/campos-personalizados/campos-personalizados.php';
+
+
+
+
+
+function get_clients() {
+	$args = [
+		'role'    => 'clients',
+		'orderby' => 'user_nicename',
+		'order'   => 'ASC'
+	];
+	$users = get_users($args);
+	return $users;
+}
+
+
+
+function change_posts_per_page($query) {
+	if (
+		!(isset($_REQUEST['post_type']) AND $_REQUEST['post_type'] == 'packages') AND
+		!(isset($_REQUEST['post']) AND get_post($_REQUEST['post'])->post_type == 'packages')
+	) { return; }
+
+	$current_user = wp_get_current_user();
+	$role = $current_user->roles[0];
+
+	if ($role === 'clients') {
+		// CASO TENTER ACESSAR UM PACOTE VIA LINK E NAO ESTEJA INCLUIDO NO PACOTE
+		if (isset($_REQUEST['action']) AND $_REQUEST['action'] == 'edit') {
+			global $wpdb;
+			$post_id = $_REQUEST['post'];
+			$query_post = "
+				SELECT meta_value as client_id FROM wp_postmeta
+				WHERE post_id = $post_id
+				AND meta_key LIKE '_clients%'
+			";
+			$clients = $wpdb->get_results($query_post);
+			$clients = array_column($clients, 'client_id');
+			
+			if (!in_array($current_user->ID, $clients)) {
+				wp_redirect('/wp-admin/edit.php?post_type=packages');
+				exit;
+			}
+		}
+
+		// FILTRO A LISTA DE PACOTES, EXIBINDO SOMENTO OS PACOTES QUE O USUÁRIO ESTA INCLUIDO
+		if (!isset($_REQUEST['action'])) {
+			$query->set('meta_query', [
+				[
+					'key' => 'clients',
+					'compare' => 'EXISTS',
+					'value' => $current_user->ID,
+				]
+			]);
+		}
+	} elseif ($role === 'autonomous') {
+		// CASO TENTER ACESSAR UM PACOTE VIA LINK E NAO ESTEJA INCLUIDO NO PACOTE
+		if (isset($_REQUEST['action']) AND $_REQUEST['action'] == 'edit') {
+			$post_id = $_REQUEST['post'];
+			if (get_post($post_id)->post_author != $current_user->ID) {
+				wp_redirect('/wp-admin/edit.php?post_type=packages');
+				exit;
+			}
+		}
+
+		// FILTRO A LISTA DE PACOTES, EXIBINDO SOMENTO OS PACOTES QUE O USUÁRIO CRIOU
+		if (!isset($_REQUEST['action'])) {
+			$query->set('author', $current_user->ID);
+		}
+	} else { return; }
+}
+add_action('pre_get_posts', 'change_posts_per_page');
+
+
+
+
+add_filter('views_edit-packages', 'menu_presidente', 10, 1);
+function menu_presidente($menu) {
+	$current_user = wp_get_current_user();
+	$role = $current_user->roles[0];
+
+	if ($role != 'administrator') {
+		unset($menu['all']);
+		unset($menu['publish']);
+		unset($menu['trash']);
+	
+		$argumentos = [
+			'numberposts'   => -1,
+			'post_type'     => 'packages',
+		];	
+		$quant_posts_ja_destacados = count(get_posts($argumentos));
+	
+		$menu['all'] = '
+			<a href="edit.php?post_type=packages">
+				Todos
+				<span class="txt-dark">('.$quant_posts_ja_destacados.')</span>
+			</a>
+		';
+	}
+	return $menu;
+}
+
+
+
+
+add_action('pre_get_posts', 'before_data_is_saved_function');
+function before_data_is_saved_function($query) {
+	$current_user = wp_get_current_user();
+	$role = $current_user->roles[0];
+	if (!(isset($_REQUEST['post']) AND get_post($_REQUEST['post']) AND $role == 'clients')) {
+		return;
+	}
+	
+	$post_id = $_REQUEST['post'];
+	$data_carbon = carbon_get_post_meta($post_id, 'sections_packages');
+	foreach ($data_carbon as $key => $section) {
+		if (
+			(isset($section['confirm_client_termination']) AND $section['confirm_client_termination']) AND
+			empty($section['closing_date_client'])
+		) {
+			$key_field = "_sections_packages|closing_date_client|$key|0|value";
+			update_post_meta($post_id, $key_field, current_time('d/m/Y H:i'));
+		}
+	}
+}

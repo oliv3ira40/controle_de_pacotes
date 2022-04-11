@@ -2,6 +2,13 @@
 .config-packages .cf-complex__group-actions {
     display: none;
 }
+.config-packages .cf-complex__inserter {
+    display: none;
+}
+
+.config-packages .cf-complex__tabs-item {
+    pointer-events: none;
+}
 
 /* Remove os espaços dos campos do tipo "hidden" */
 .cf-hidden {
