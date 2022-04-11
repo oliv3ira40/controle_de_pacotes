@@ -453,7 +453,61 @@ function get_clients() {
 
 
 
+function change_posts_per_page($query) {
+	if (
+		!(isset($_REQUEST['post_type']) AND $_REQUEST['post_type'] == 'packages') AND
+		!(isset($_REQUEST['post']) AND get_post($_REQUEST['post'])->post_type == 'packages')
+	) { return; }
 
+	$current_user = wp_get_current_user();
+	$role = $current_user->roles[0];
+
+	if ($role === 'clients') {
+		// CASO TENTER ACESSAR UM PACOTE VIA LINK E NAO ESTEJA INCLUIDO NO PACOTE
+		if (isset($_REQUEST['action']) AND $_REQUEST['action'] == 'edit') {
+			global $wpdb;
+			$post_id = $_REQUEST['post'];
+			$query_post = "
+				SELECT meta_value as client_id FROM wp_postmeta
+				WHERE post_id = $post_id
+				AND meta_key LIKE '_clients%'
+			";
+			$clients = $wpdb->get_results($query_post);
+			$clients = array_column($clients, 'client_id');
+			
+			if (!in_array($current_user->ID, $clients)) {
+				wp_redirect('/wp-admin/edit.php?post_type=packages');
+				exit;
+			}
+		}
+
+		// FILTRO A LISTA DE PACOTES, EXIBINDO SOMENTO OS PACOTES QUE O USUÁRIO ESTA INCLUIDO
+		if (!isset($_REQUEST['action'])) {
+			$query->set('meta_query', [
+				[
+					'key' => 'clients',
+					'compare' => 'EXISTS',
+					'value' => $current_user->ID,
+				]
+			]);
+		}
+	} elseif ($role === 'autonomous') {
+		// CASO TENTER ACESSAR UM PACOTE VIA LINK E NAO ESTEJA INCLUIDO NO PACOTE
+		if (isset($_REQUEST['action']) AND $_REQUEST['action'] == 'edit') {
+			$post_id = $_REQUEST['post'];
+			if (get_post($post_id)->post_author != $current_user->ID) {
+				wp_redirect('/wp-admin/edit.php?post_type=packages');
+				exit;
+			}
+		}
+
+		// FILTRO A LISTA DE PACOTES, EXIBINDO SOMENTO OS PACOTES QUE O USUÁRIO CRIOU
+		if (!isset($_REQUEST['action'])) {
+			$query->set('author', $current_user->ID);
+		}
+	} else { return; }
+}
+add_action('pre_get_posts', 'change_posts_per_page');
 
 
 
