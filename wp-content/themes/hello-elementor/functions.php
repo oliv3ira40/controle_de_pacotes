@@ -537,3 +537,27 @@ function menu_presidente($menu) {
 	}
 	return $menu;
 }
+
+
+
+
+add_action('pre_get_posts', 'before_data_is_saved_function');
+function before_data_is_saved_function($query) {
+	$current_user = wp_get_current_user();
+	$role = $current_user->roles[0];
+	if (!(isset($_REQUEST['post']) AND get_post($_REQUEST['post']) AND $role == 'clients')) {
+		return;
+	}
+	
+	$post_id = $_REQUEST['post'];
+	$data_carbon = carbon_get_post_meta($post_id, 'sections_packages');
+	foreach ($data_carbon as $key => $section) {
+		if (
+			(isset($section['confirm_client_termination']) AND $section['confirm_client_termination']) AND
+			empty($section['closing_date_client'])
+		) {
+			$key_field = "_sections_packages|closing_date_client|$key|0|value";
+			update_post_meta($post_id, $key_field, current_time('d/m/Y H:i'));
+		}
+	}
+}
