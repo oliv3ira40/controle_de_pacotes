@@ -561,3 +561,12 @@ function before_data_is_saved_function($query) {
 		}
 	}
 }
+
+
+
+function insert_data_title($value) {
+	if (isset($_REQUEST['carbon_fields_compact_input']['_name'])) {
+		return $_REQUEST['carbon_fields_compact_input']['_name'];
+	}
+}
+add_filter('pre_post_title', 'insert_data_title');
