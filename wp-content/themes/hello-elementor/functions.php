@@ -238,6 +238,11 @@ function admin_style() {
 }
 add_action('admin_enqueue_scripts', 'admin_style');
 
+function admin_script() {
+	wp_enqueue_script('admin-geral', get_template_directory_uri().'/assets/admin.js');
+}
+add_action('admin_enqueue_scripts', 'admin_script');
+
 
 
 /**
