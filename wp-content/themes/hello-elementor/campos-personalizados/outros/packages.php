@@ -101,7 +101,7 @@ function packages() {
                 
                     Field::make('complex', 'sections_packages', 'Sessões')
                         ->set_layout('tabbed-vertical')
-                        ->set_classes('config-packages')
+                        ->set_classes('fields_clients')
                         ->add_fields([
                             Field::make('text', 'status', 'Status')->set_attribute('readOnly', true),
     
