@@ -585,4 +585,4 @@ function update_package_titles($value) {
 		return $_REQUEST['carbon_fields_compact_input']['_name'];
 	}
 }
-add_filter('pre_post_title', 'insert_data_title');
+add_filter('pre_post_title', 'update_package_titles');
