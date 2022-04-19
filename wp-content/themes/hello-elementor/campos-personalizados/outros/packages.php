@@ -46,7 +46,8 @@ function packages() {
     
                     Field::make('date_time', 'closing_date_autonomous', 'Data do encerramento (Profissional)')
                         ->set_conditional_logic([ ['field' => 'confirm_autonomous_termination', 'value' => true] ])
-                        ->set_attribute('placeholder', 'Ainda não confirmado'),
+                        ->set_attribute('placeholder', 'Ainda não confirmado')
+                        ->set_help_text('Este campo é obrigatório para que o cliente seja notificado sobre o termino da sessão via e-mail'),
     
                     Field::make('text', 'closing_date_client', 'Data do encerramento (Cliente)')
                         ->set_conditional_logic([ ['field' => 'status', 'value' => 'Finalizada'] ])
