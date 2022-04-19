@@ -598,3 +598,15 @@ function load_template_part($template_name, $part_name=null, $args = null) {
     ob_end_clean();
     return $var;
 }
+
+/**
+ * Após o login redireciona qualquer usuário não "Administrador" para a página de pacotes
+ * @return void
+ */
+function login_redirect_no_administrators($redirect_to, $request, $user) {
+	if(isset($user->roles) AND $user->roles[0] != 'administrator') {
+        return "/wp-admin/edit.php?post_type=packages";
+    }
+	return admin_url();
+}
+add_filter("login_redirect", "login_redirect_no_administrators", 10, 3);
