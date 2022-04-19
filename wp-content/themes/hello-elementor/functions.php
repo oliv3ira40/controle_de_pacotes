@@ -586,3 +586,15 @@ function update_package_titles($value) {
 	}
 }
 add_filter('pre_post_title', 'update_package_titles');
+
+/**
+ * Carrega o template do email em uma variável
+ * @return string
+ */
+function load_template_part($template_name, $part_name=null, $args = null) {
+    ob_start();
+    get_template_part($template_name, $part_name, $args);
+    $var = ob_get_contents();
+    ob_end_clean();
+    return $var;
+}
