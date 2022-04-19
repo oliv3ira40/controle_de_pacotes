@@ -218,36 +218,29 @@ if ( ! function_exists( 'hello_elementor_body_open' ) ) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/**
+ * Inclui arquivo css ao tema
+ * @return mixed
+ */
 function admin_style() {
 	wp_enqueue_style('admin-geral', get_template_directory_uri().'/assets/admin.css');
 }
 add_action('admin_enqueue_scripts', 'admin_style');
 
+
+/**
+ * Inclui arquivo js ao tema
+ * @return mixed
+ */
 function admin_script() {
 	wp_enqueue_script('admin-geral', get_template_directory_uri().'/assets/admin.js');
 }
 add_action('admin_enqueue_scripts', 'admin_script');
 
 
-
 /**
- * Debug de valores
- * @return void
+ * Função para debugar valores
+ * @return mixed
  */
 function dd(...$valores) {
 	array_map(function ($valor) {
@@ -258,28 +251,32 @@ function dd(...$valores) {
 }
 
 
+/**
+ * Remove alguns grupos de usuários nátivos do wordpress
+ * @return void
+ */
 remove_role('contributor');
 remove_role('author');
 remove_role('editor');
 remove_role('subscriber');
 
 
-
-
-
 // remove_role('autonomous');
-// ADICIONA O GRUPO AUTONOMO
+/**
+ * Registra um novo grupo de usuários "Autonomo"
+ * @return void
+ */
 function insert_role_autonomous() {
     if (get_option('autonomous') < 1) {
         add_role(
 			'autonomous',
 			'Autônomo', [
-				'read'            => true, // Allows a user to read
-				'create_posts'      => true, // Allows user to create new posts
-				'edit_posts'        => true, // Allows user to edit their own posts
-				'edit_others_posts' => false, // Allows user to edit others posts too
-				'publish_posts' => true, // Allows the user to publish posts
-				'manage_categories' => true, // Allows user to manage post categories,
+				'read'            => true,
+				'create_posts'      => true,
+				'edit_posts'        => true,
+				'edit_others_posts' => false,
+				'publish_posts' => true,
+				'manage_categories' => true,
 
 				'create_posts_packages' => true,
 				'publish_packages' => true,
@@ -298,19 +295,23 @@ function insert_role_autonomous() {
 }
 add_action('init', 'insert_role_autonomous');
 
+
 // remove_role('clients');
-// ADICIONA O GRUPO Cliente
+/**
+ * Registra um novo grupo de usuários "Cliente"
+ * @return void
+ */
 function insert_role_clients() {
     if (get_option('clients') < 1) {
         add_role(
 			'clients',
 			'Cliente', [
-				'read'            => true, // Allows a user to read
-				'create_posts'      => true, // Allows user to create new posts
-				'edit_posts'        => true, // Allows user to edit their own posts
-				'edit_others_posts' => true, // Allows user to edit others posts too
-				'publish_posts' => true, // Allows the user to publish posts
-				'manage_categories' => true, // Allows user to manage post categories,
+				'read'            => true,
+				'create_posts'      => true,
+				'edit_posts'        => true,
+				'edit_others_posts' => true,
+				'publish_posts' => true,
+				'manage_categories' => true,
 
 				'create_posts_packages' => false,
 				'publish_packages' => true,
@@ -328,13 +329,6 @@ function insert_role_clients() {
     }
 }
 add_action('init', 'insert_role_clients');
-
-
-
-
-
-
-
 
 
 /**
@@ -380,45 +374,49 @@ function register_packages_post_type() {
 }
 add_action('init', 'register_packages_post_type');
 
+
 /**
- * Remove a funcionalidade de editar usando a opção de ação em massa
+ * Remove a funcionalidade de editar usando a opção de ação em massa dos pacotes
  * @return void
  */
-function remove_bulk_actions_ar() {
+function remove_bulk_editing_of_packages() {
 	if (!current_user_can('bulk_packages')) {
 		add_filter('bulk_actions-edit-packages', '__return_empty_array');
 		add_filter('bulk_actions-upload', '__return_empty_array');
 	}
 }
-add_action('wp_loaded', 'remove_bulk_actions_ar');
+add_action('wp_loaded', 'remove_bulk_editing_of_packages');
+
 
 /**
- * Remove a checkbox para selecionar mútiplos posts
- * @return void
+ * Remove a checkbox para selecionar mútiplos posts da lista pacotes
+ * @return array
  */
-function remove_checkbox_ar ($columns) {
+function removes_multiple_post_checkbox_from_packages($columns) {
 	unset($columns['cb']);
 	return $columns;
 }
-add_filter('manage_packages_posts_columns', 'remove_checkbox_ar');
+add_filter('manage_packages_posts_columns', 'removes_multiple_post_checkbox_from_packages');
+
 
 /**
- * Remove campo de edição rápida
- * @return void
+ * Remove campo de edição rápida da lista de pacotes
+ * @return array
  */
-function remove_edicao_rapida_ar($actions, $post) { 
+function remove_quick_edit_from_package_list($actions, $post) { 
 	if (get_post_type(get_the_ID()) == 'packages') {
 		unset($actions['inline hide-if-no-js']);
 	}
 	return $actions;
 }
-add_filter('post_row_actions','remove_edicao_rapida_ar',10,2);
+add_filter('post_row_actions','remove_quick_edit_from_package_list',10,2);
+
 
 /**
- * Adiciona as permissões de usuário
+ * Adiciona permissões ao grupo "Administrador"
  * @return void
  */
-function add_permissoes_packages() {
+function add_permissions_to_administrators() {
 	$admins = get_role('administrator');
 	$admins->add_cap('create_posts_packages');
 	$admins->add_cap('publish_packages');
@@ -431,21 +429,20 @@ function add_permissoes_packages() {
 	$admins->add_cap('delete_package');
 	$admins->add_cap('read_package');
 }
-add_action('admin_init', 'add_permissoes_packages');
-
-
-
+add_action('admin_init', 'add_permissions_to_administrators');
 
 
 /**
- * Campos personalizados
+ * Inicia o Carbon Fields - Campos personalizados
  */
 require get_template_directory() . '/campos-personalizados/campos-personalizados.php';
 
 
 
-
-
+/**
+ * Retornar os usuários no grupo "Cliente"
+ * @return object
+ */
 function get_clients() {
 	$args = [
 		'role'    => 'clients',
@@ -457,8 +454,11 @@ function get_clients() {
 }
 
 
-
-function change_posts_per_page($query) {
+/**
+ * Filtrar posts da lista de pacotes de acordo com as permissões do usuários logado
+ * @return object
+ */
+function filter_posts_from_package_list($query) {
 	if (
 		!(isset($_REQUEST['post_type']) AND $_REQUEST['post_type'] == 'packages') AND
 		!(isset($_REQUEST['post']) AND get_post($_REQUEST['post'])->post_type == 'packages')
@@ -512,13 +512,14 @@ function change_posts_per_page($query) {
 		}
 	} else { return; }
 }
-add_action('pre_get_posts', 'change_posts_per_page');
+add_action('pre_get_posts', 'filter_posts_from_package_list');
 
 
-
-
-add_filter('views_edit-packages', 'menu_presidente', 10, 1);
-function menu_presidente($menu) {
+/**
+ * Remove menus nátivos e adiciona novo menu "Todos" a página de lista de pacotes
+ * @return void
+ */
+function update_package_post_list_menus($menu) {
 	$current_user = wp_get_current_user();
 	$role = $current_user->roles[0];
 
@@ -527,30 +528,37 @@ function menu_presidente($menu) {
 		unset($menu['publish']);
 		unset($menu['trash']);
 	
-		$argumentos = [
+		$args = [
 			'numberposts'   => -1,
 			'post_type'     => 'packages',
 		];	
-		$quant_posts_ja_destacados = count(get_posts($argumentos));
+		$n_posts = count(get_posts($args));
 	
 		$menu['all'] = '
 			<a href="edit.php?post_type=packages">
 				Todos
-				<span class="txt-dark">('.$quant_posts_ja_destacados.')</span>
+				<span class="txt-dark">('.$n_posts.')</span>
 			</a>
 		';
 	}
 	return $menu;
 }
+add_filter('views_edit-packages', 'update_package_post_list_menus', 10, 1);
 
 
+/**
+ * Verifica se um cliente finalizou uma sessão e salva a data de termino
+ * @return void
+ */
+add_action('pre_get_posts', 'checks_if_a_client_has_ended_a_session');
+function checks_if_a_client_has_ended_a_session($query) {
+	if (!isset($_REQUEST['post'])) {
+		return;
+	}
 
-
-add_action('pre_get_posts', 'before_data_is_saved_function');
-function before_data_is_saved_function($query) {
 	$current_user = wp_get_current_user();
 	$role = $current_user->roles[0];
-	if (!(isset($_REQUEST['post']) AND get_post($_REQUEST['post']) AND $role == 'clients')) {
+	if (!(get_post($_REQUEST['post']) AND $role == 'clients')) {
 		return;
 	}
 	
@@ -568,8 +576,11 @@ function before_data_is_saved_function($query) {
 }
 
 
-
-function insert_data_title($value) {
+/**
+ * Atualiza os titulos(nátivo e carbon fields) do pacote sempre que ele for atualizado
+ * @return void
+ */
+function update_package_titles($value) {
 	if (isset($_REQUEST['carbon_fields_compact_input']['_name'])) {
 		return $_REQUEST['carbon_fields_compact_input']['_name'];
 	}
