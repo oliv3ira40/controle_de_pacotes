@@ -587,6 +587,63 @@ function update_package_titles($value) {
 }
 add_filter('pre_post_title', 'update_package_titles');
 
+
+/**
+ * Verifica se um autonomo finalizou uma sessão e envia uma notificação para os clientes envolvidos no pacote
+ * @return void
+ */
+add_action('pre_get_posts', 'checks_if_a_autonomous_ends_a_session');
+function checks_if_a_autonomous_ends_a_session($query) {
+	if (!isset($_REQUEST['post'])) {
+		return;
+	}
+
+	$current_user = wp_get_current_user();
+	$role = $current_user->roles[0];
+	if (!(get_post($_REQUEST['post']) AND $role == 'autonomous')) {
+		return;
+	}
+
+	$post_id = $_REQUEST['post'];
+	$data_carbon = carbon_get_post_meta($post_id, 'sections_packages');
+	$status = array_count_values(array_column($data_carbon, 'status'));
+	$data_send = [
+		'package_name' => carbon_get_post_meta($post_id, 'name'),
+		'autonomous_name' => get_the_author_meta('display_name', get_post($post_id)->post_author),
+		'package_link' => get_edit_post_link($post_id),
+		'n_remaining_sessions' => $status['Não finalizada'] ?? 0,
+	];
+
+	foreach ($data_carbon as $key => $data_session) {
+		if ($data_session['status'] == 'Finalizada') {
+			if (
+				(isset($data_session['confirm_autonomous_termination']) AND $data_session['confirm_autonomous_termination']) AND
+				!empty($data_session['closing_date_autonomous']) AND
+				empty($data_session['termination_notice_via_email'])
+			) {
+				$data_send['n_current_session'] = $key + 1;
+				$data_send['closing_date_session'] = date_i18n('j \d\e F \d\e Y \á\s H:s\h',
+					strtotime($data_session['closing_date_autonomous']));
+
+				$clients = carbon_get_post_meta($post_id, 'clients');
+				$result_send = false;
+				foreach ($clients as $client_id) {
+					$client = get_user_by('ID', $client_id);
+					$client_email = $client->data->user_email;
+
+					$data_send['client_email'] = $client_email;
+					$result_send = notifies_client_end_of_session($data_send);
+				};
+				if ($result_send) {
+					$key_field = "_sections_packages|termination_notice_via_email|$key|0|value";
+					update_post_meta($post_id, $key_field, current_time('d/m/Y H:i'));
+				}
+			}
+		}
+	}
+}
+
+
 /**
  * Carrega o template do email em uma variável
  * @return string
