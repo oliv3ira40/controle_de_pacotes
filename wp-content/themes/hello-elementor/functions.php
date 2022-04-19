@@ -599,6 +599,21 @@ function load_template_part($template_name, $part_name=null, $args = null) {
     return $var;
 }
 
+
+/**
+ * Envia um e-mail de notificação de termino de sessão para o cliente
+ * @return integer
+ */
+function notifies_client_end_of_session($data_send) {
+	$to = $data_send['client_email'];
+	$subject = ucfirst($data_send['autonomous_name']).' - Sessão finalizada';
+	$body = load_template_part('template-parts/end-of-session', 'teste', $data_send);
+	$headers = ['Content-Type: text/html; charset=UTF-8'];
+
+	return wp_mail($to, $subject, $body, $headers);
+}
+
+
 /**
  * Após o login redireciona qualquer usuário não "Administrador" para a página de pacotes
  * @return void
