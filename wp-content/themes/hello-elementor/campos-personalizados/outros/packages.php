@@ -5,9 +5,10 @@ use Carbon_Fields\Field;
 function packages() {
     $list_page = str_contains($_SERVER['REQUEST_URI'], 'edit.php');
     $new_page = str_contains($_SERVER['REQUEST_URI'], 'post-new.php');
+
     if (
         (isset($_SERVER['REQUEST_URI']) AND $new_page AND $_REQUEST['post_type'] == 'packages') OR
-        (isset($_REQUEST['action']) AND $_REQUEST['action'] != 'editpost') OR
+        (isset($_REQUEST['action']) AND $_REQUEST['action'] != 'editpost' AND $_REQUEST['action'] != 'logout') OR
         (isset($_REQUEST['action']) AND $_REQUEST['action'] == 'editpost' AND $_REQUEST['post_type'] == 'packages') OR
         $list_page
     ) {
@@ -31,6 +32,8 @@ function packages() {
                             'Não finalizada' => 'Não finalizada',
                             'Finalizada' => 'Finalizada',
                         ]),
+                    
+                    Field::make('hidden', 'termination_notice_via_email', 'Aviso de encerramento via e-mail'),
     
                     Field::make('date_time', 'expected_date', 'Data prevista'),
                     
@@ -46,7 +49,8 @@ function packages() {
     
                     Field::make('date_time', 'closing_date_autonomous', 'Data do encerramento (Profissional)')
                         ->set_conditional_logic([ ['field' => 'confirm_autonomous_termination', 'value' => true] ])
-                        ->set_attribute('placeholder', 'Ainda não confirmado'),
+                        ->set_attribute('placeholder', 'Ainda não confirmado')
+                        ->set_help_text('Este campo é obrigatório para que o cliente seja notificado sobre o termino da sessão via e-mail'),
     
                     Field::make('text', 'closing_date_client', 'Data do encerramento (Cliente)')
                         ->set_conditional_logic([ ['field' => 'status', 'value' => 'Finalizada'] ])
