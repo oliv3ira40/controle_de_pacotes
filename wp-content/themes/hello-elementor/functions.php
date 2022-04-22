@@ -467,6 +467,13 @@ function filter_posts_from_package_list($query) {
 	$current_user = wp_get_current_user();
 	$role = $current_user->roles[0];
 
+	$ordenar_por = $query->get('orderby');
+	if (!$ordenar_por) {
+		$query->set('meta_key', '_close_package');
+		$query->set('orderby', '_close_package');
+		$query->set('order', 'ASC');
+	}
+
 	if ($role === 'clients') {
 		// CASO TENTER ACESSAR UM PACOTE VIA LINK E NAO ESTEJA INCLUIDO NO PACOTE
 		if (isset($_REQUEST['action']) AND $_REQUEST['action'] == 'edit') {
