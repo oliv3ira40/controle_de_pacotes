@@ -519,7 +519,7 @@ function filter_posts_from_package_list($query) {
 		}
 	} else { return; }
 }
-add_action('pre_get_posts', 'filter_posts_from_package_list');
+add_action('pre_get_posts', 'filter_posts_from_package_list', 10);
 
 
 /**
@@ -689,3 +689,20 @@ function login_redirect_no_administrators($redirect_to, $request, $user) {
 	return admin_url();
 }
 add_filter("login_redirect", "login_redirect_no_administrators", 10, 3);
+
+
+/**
+ * Exibi as colunas "Clientes", "Sessões finalizadas", "Sessões não finalizadas" e "Status" na lista de pacotes
+ * @return void
+ */
+add_filter('manage_packages_posts_columns', function($columns) {
+	$offset = array_search('date', array_keys($columns));
+	return array_merge(
+		array_slice($columns, 0, $offset),
+		['_clients' => __('Clientes', 'textdomain')],
+		['_finished_sessions' => __('Sessões finalizadas', 'textdomain')],
+		['_not_finished_sessions' => __('Sessões não finalizadas', 'textdomain')],
+		['_close_package' => __('Status', 'textdomain')],
+		array_slice($columns, $offset, null)
+	);
+});
