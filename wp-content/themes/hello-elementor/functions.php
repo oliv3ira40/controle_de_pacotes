@@ -728,3 +728,87 @@ function obter_nomes_clientes_do_pacotes($post_id) {
 	return $clients_names;
 }
 
+
+/**
+ * Trata o resultado exibido na coluna "Clientes"
+ * @return void
+ */
+add_action('manage_packages_posts_custom_column', function($column_key, $post_id) {
+	if ($column_key != '_clients') return;
+
+	$clients_names = obter_nomes_clientes_do_pacotes($post_id);
+	if ($clients_names) {
+		echo "<span class='txt-muted txt-bold'>$clients_names</span>";
+	} else { echo '<span>—--</span>'; }
+}, 10, 2);
+
+
+/**
+ * Trata o resultado exibido na coluna "Sessões finalizadas" e "Sessões não finalizadas"
+ * @return void
+ */
+add_action('manage_packages_posts_custom_column', function($column_key, $post_id) {
+	if ($column_key == '_finished_sessions' OR $column_key == '_not_finished_sessions') {
+		$data_carbon = carbon_get_post_meta($post_id, 'sections_packages');
+		$n_status_sessions = array_count_values(array_column($data_carbon, 'status'));
+
+		if ($column_key == '_finished_sessions') {
+			$n_status_session = $n_status_sessions['Finalizada'] ?? '---';
+			echo "<span class='txt-muted txt-bold'>$n_status_session</span>";
+		} else {
+			$n_status_session = $n_status_sessions['Não finalizada'] ?? '---';
+			echo "<span class='txt-muted txt-bold'>$n_status_session</span>";
+		}
+	};
+}, 10, 2);
+
+
+/**
+ * Trata o resultado exibido na coluna "Status do pacote"
+ * @return void
+ */
+add_action('manage_packages_posts_custom_column', function($column_key, $post_id) {
+	if ($column_key != '_close_package') return;
+
+	$status_package = carbon_get_post_meta($post_id, 'close_package');
+	$data_carbon = carbon_get_post_meta($post_id, 'sections_packages');
+	$n_status_sessions = array_count_values(array_column($data_carbon, 'status'));
+
+	if (
+		(isset($n_status_sessions['Finalizada']) AND $n_status_sessions['Finalizada'] > 0) AND
+		(!isset($n_status_sessions['Não finalizada']) OR $n_status_sessions['Não finalizada'] == 0)
+	) {
+		if ($status_package) {
+			echo "<span class='txt-muted txt-bold txt-success'>Pacote finalizado</span>";
+		} else {
+			echo "<span class='txt-muted txt-bold txt-info'>Aguardando finalização</span>";
+		}
+	} else {
+		echo '<span class="txt-bold txt-warning">Pacote em andamento</span>';
+	}
+}, 10, 2);
+
+
+/**
+ * Adiciona opção de filtro na coluna "Clientes"
+ * @return void
+ */
+add_filter('manage_edit-packages_sortable_columns', function($colunas) {
+	$colunas['_close_package'] = '_close_package';
+	return $colunas;
+});
+
+
+/**
+ * Adiciona regra de ordenação para a coluna "Clientes"
+ * @return void
+ */
+add_action('pre_get_posts', function($query) {
+	if (!is_admin()) { return; }
+
+	$ordenar_por = $query->get('orderby');
+	if ($ordenar_por == '_close_package') {
+		$query->set('meta_key', '_close_package');
+		$query->set('orderby', '_close_package');
+	}
+}, 9);
