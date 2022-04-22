@@ -706,3 +706,25 @@ add_filter('manage_packages_posts_columns', function($columns) {
 		array_slice($columns, $offset, null)
 	);
 });
+
+
+/**
+ * Retorna os nomes dos clientes vinculados ao pacote
+ * @return string
+ */
+function obter_nomes_clientes_do_pacotes($post_id) {
+	$post = get_post($post_id);
+	global $wpdb;
+	$query_post = "
+		SELECT meta_value as client_id FROM wp_postmeta
+		WHERE post_id = $post->ID
+		AND meta_key LIKE '_clients%'
+	";
+	$clients = $wpdb->get_results($query_post);
+	$clients = array_column($clients, 'client_id');
+	$clients_names = get_users(['include'=>$clients, 'role'=>'clients']);
+	$clients_names = implode(', ', array_column($clients_names, 'display_name'));
+
+	return $clients_names;
+}
+
