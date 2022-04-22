@@ -812,3 +812,30 @@ add_action('pre_get_posts', function($query) {
 		$query->set('orderby', '_close_package');
 	}
 }, 9);
+
+
+// TODO: ADICIONAR MENU PARA EXIBIR SOMENTE OS POSTS "FINALIZADOS: _close_package", exemplo no código abaixo
+/**
+ * Adiciona novo menu "Clientes" na página de lista de posts
+ * @return void
+ */
+// add_filter('views_edit-Clientess_mandatos', 'menu_Clientes', 10, 1);
+// function menu_Clientes($menu) {
+// 	$argumentos = [
+// 		'numberposts'   => -1,
+// 		'post_type'     => 'Clientess_mandatos',
+// 		'meta_key'      => '_clients',
+// 		'meta_value'    => 1,
+// 		'orderby'		=> '_clients',
+// 		'order'			=> 'ASC',
+// 	];	
+// 	$quant_posts_ja_destacados = count(get_posts($argumentos));
+
+// 	$menu['metakey'] = '
+// 		<a href="edit.php?orderby=_clients&order=asc&post_type=Clientess_mandatos">
+// 			Clientes
+// 			<span class="txt-dark">('.$quant_posts_ja_destacados.')</span>
+// 		</a>
+// 	';	
+// 	return $menu;
+// }
