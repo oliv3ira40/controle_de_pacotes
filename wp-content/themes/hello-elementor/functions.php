@@ -467,6 +467,13 @@ function filter_posts_from_package_list($query) {
 	$current_user = wp_get_current_user();
 	$role = $current_user->roles[0];
 
+	$ordenar_por = $query->get('orderby');
+	if (!$ordenar_por) {
+		$query->set('meta_key', '_close_package');
+		$query->set('orderby', '_close_package');
+		$query->set('order', 'ASC');
+	}
+
 	if ($role === 'clients') {
 		// CASO TENTER ACESSAR UM PACOTE VIA LINK E NAO ESTEJA INCLUIDO NO PACOTE
 		if (isset($_REQUEST['action']) AND $_REQUEST['action'] == 'edit') {
@@ -512,7 +519,7 @@ function filter_posts_from_package_list($query) {
 		}
 	} else { return; }
 }
-add_action('pre_get_posts', 'filter_posts_from_package_list');
+add_action('pre_get_posts', 'filter_posts_from_package_list', 10);
 
 
 /**
@@ -682,3 +689,153 @@ function login_redirect_no_administrators($redirect_to, $request, $user) {
 	return admin_url();
 }
 add_filter("login_redirect", "login_redirect_no_administrators", 10, 3);
+
+
+/**
+ * Exibi as colunas "Clientes", "Sessões finalizadas", "Sessões não finalizadas" e "Status" na lista de pacotes
+ * @return void
+ */
+add_filter('manage_packages_posts_columns', function($columns) {
+	$offset = array_search('date', array_keys($columns));
+	return array_merge(
+		array_slice($columns, 0, $offset),
+		['_clients' => __('Clientes', 'textdomain')],
+		['_finished_sessions' => __('Sessões finalizadas', 'textdomain')],
+		['_not_finished_sessions' => __('Sessões não finalizadas', 'textdomain')],
+		['_close_package' => __('Status', 'textdomain')],
+		array_slice($columns, $offset, null)
+	);
+});
+
+
+/**
+ * Retorna os nomes dos clientes vinculados ao pacote
+ * @return string
+ */
+function obter_nomes_clientes_do_pacotes($post_id) {
+	$post = get_post($post_id);
+	global $wpdb;
+	$query_post = "
+		SELECT meta_value as client_id FROM wp_postmeta
+		WHERE post_id = $post->ID
+		AND meta_key LIKE '_clients%'
+	";
+	$clients = $wpdb->get_results($query_post);
+	$clients = array_column($clients, 'client_id');
+	$clients_names = get_users(['include'=>$clients, 'role'=>'clients']);
+	$clients_names = implode(', ', array_column($clients_names, 'display_name'));
+
+	return $clients_names;
+}
+
+
+/**
+ * Trata o resultado exibido na coluna "Clientes"
+ * @return void
+ */
+add_action('manage_packages_posts_custom_column', function($column_key, $post_id) {
+	if ($column_key != '_clients') return;
+
+	$clients_names = obter_nomes_clientes_do_pacotes($post_id);
+	if ($clients_names) {
+		echo "<span class='txt-muted txt-bold'>$clients_names</span>";
+	} else { echo '<span>—--</span>'; }
+}, 10, 2);
+
+
+/**
+ * Trata o resultado exibido na coluna "Sessões finalizadas" e "Sessões não finalizadas"
+ * @return void
+ */
+add_action('manage_packages_posts_custom_column', function($column_key, $post_id) {
+	if ($column_key == '_finished_sessions' OR $column_key == '_not_finished_sessions') {
+		$data_carbon = carbon_get_post_meta($post_id, 'sections_packages');
+		$n_status_sessions = array_count_values(array_column($data_carbon, 'status'));
+
+		if ($column_key == '_finished_sessions') {
+			$n_status_session = $n_status_sessions['Finalizada'] ?? '---';
+			echo "<span class='txt-muted txt-bold'>$n_status_session</span>";
+		} else {
+			$n_status_session = $n_status_sessions['Não finalizada'] ?? '---';
+			echo "<span class='txt-muted txt-bold'>$n_status_session</span>";
+		}
+	};
+}, 10, 2);
+
+
+/**
+ * Trata o resultado exibido na coluna "Status do pacote"
+ * @return void
+ */
+add_action('manage_packages_posts_custom_column', function($column_key, $post_id) {
+	if ($column_key != '_close_package') return;
+
+	$status_package = carbon_get_post_meta($post_id, 'close_package');
+	$data_carbon = carbon_get_post_meta($post_id, 'sections_packages');
+	$n_status_sessions = array_count_values(array_column($data_carbon, 'status'));
+
+	if (
+		(isset($n_status_sessions['Finalizada']) AND $n_status_sessions['Finalizada'] > 0) AND
+		(!isset($n_status_sessions['Não finalizada']) OR $n_status_sessions['Não finalizada'] == 0)
+	) {
+		if ($status_package) {
+			echo "<span class='txt-muted txt-bold txt-success'>Pacote finalizado</span>";
+		} else {
+			echo "<span class='txt-muted txt-bold txt-info'>Aguardando finalização</span>";
+		}
+	} else {
+		echo '<span class="txt-bold txt-warning">Pacote em andamento</span>';
+	}
+}, 10, 2);
+
+
+/**
+ * Adiciona opção de filtro na coluna "Clientes"
+ * @return void
+ */
+add_filter('manage_edit-packages_sortable_columns', function($colunas) {
+	$colunas['_close_package'] = '_close_package';
+	return $colunas;
+});
+
+
+/**
+ * Adiciona regra de ordenação para a coluna "Clientes"
+ * @return void
+ */
+add_action('pre_get_posts', function($query) {
+	if (!is_admin()) { return; }
+
+	$ordenar_por = $query->get('orderby');
+	if ($ordenar_por == '_close_package') {
+		$query->set('meta_key', '_close_package');
+		$query->set('orderby', '_close_package');
+	}
+}, 9);
+
+
+// TODO: ADICIONAR MENU PARA EXIBIR SOMENTE OS POSTS "FINALIZADOS: _close_package", exemplo no código abaixo
+/**
+ * Adiciona novo menu "Clientes" na página de lista de posts
+ * @return void
+ */
+// add_filter('views_edit-Clientess_mandatos', 'menu_Clientes', 10, 1);
+// function menu_Clientes($menu) {
+// 	$argumentos = [
+// 		'numberposts'   => -1,
+// 		'post_type'     => 'Clientess_mandatos',
+// 		'meta_key'      => '_clients',
+// 		'meta_value'    => 1,
+// 		'orderby'		=> '_clients',
+// 		'order'			=> 'ASC',
+// 	];	
+// 	$quant_posts_ja_destacados = count(get_posts($argumentos));
+
+// 	$menu['metakey'] = '
+// 		<a href="edit.php?orderby=_clients&order=asc&post_type=Clientess_mandatos">
+// 			Clientes
+// 			<span class="txt-dark">('.$quant_posts_ja_destacados.')</span>
+// 		</a>
+// 	';	
+// 	return $menu;
+// }
