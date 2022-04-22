@@ -15,3 +15,23 @@
 .cf-complex__tabs-item--current {
     background-color: #f0f0f1 !important;
 }
+
+.txt-bold {
+    font-weight: bold;
+}
+
+.txt-success {
+    color: green;
+}
+
+.txt-danger {
+    color: red;
+}
+
+.txt-warning {
+    color: orange;
+}
+
+.txt-info {
+    color: blue;
+}
